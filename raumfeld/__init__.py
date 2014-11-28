@@ -99,7 +99,7 @@ class RaumfeldDevice(object):
         self.av_transport.Play(InstanceID=1, Speed=2)
 
 
-    def play(self, value):
+    def playURI(self, value):
         self.av_transport.SetAVTransportURI(InstanceID=1, CurrentURI=value, CurrentURIMetaData="")
 
     def next(self):
