@@ -114,6 +114,11 @@ class RaumfeldDevice(object):
         """Pause"""
         self.av_transport.Pause(InstanceID=1)
 
+    @property    
+    def curTransState(self):
+    	"""Get Current Transport State"""
+	    return self.av_transport.GetTransportInfo(InstanceID=1).CurrentTransportState
+
     @property
     def volume(self):
         """get/set the current volume"""
