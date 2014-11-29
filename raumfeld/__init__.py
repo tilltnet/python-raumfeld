@@ -117,7 +117,7 @@ class RaumfeldDevice(object):
     @property    
     def curTransState(self):
     	"""Get Current Transport State"""
-	    return self.av_transport.GetTransportInfo(InstanceID=1).CurrentTransportState
+    	return self.av_transport.GetTransportInfo(InstanceID=1).CurrentTransportState
 
     @property
     def volume(self):
