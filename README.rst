@@ -24,7 +24,7 @@ Quickstart
     import raumfeld
 
     # discovery returns a list of RaumfeldDevices
-    devices = raumfeld.discover(timeout=1, retries=1)
+    devices = raumfeld.discover()
     if len(devices) > 0:
         speaker = devices[0]
 
