@@ -145,8 +145,8 @@ class RaumfeldDevice(object):
 
     @property
     def curTransState(self):
-        """Get CurrentURIMetaData"""
-        return self.av_transport.GetMediaInfo(InstanceID=1).CurrentURIMetaData
+        """Get CurrentCurrentURIMetaData"""
+        return self.av_transport.GetMediaInfo(InstanceID=1).CurrentCurrentURIMetaData
 
     def __repr__(self):
         return ('<RaumfeldDevice(location="{0}", name="{1}")>'
