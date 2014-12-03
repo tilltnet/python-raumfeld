@@ -114,11 +114,6 @@ class RaumfeldDevice(object):
         """Pause"""
         self.av_transport.Pause(InstanceID=1)
 
-    @property    
-    def curTransState(self):
-    	"""Get Current Transport State"""
-    	return self.av_transport.GetTransportInfo(InstanceID=1).CurrentTransportState
-
     @property
     def volume(self):
         """get/set the current volume"""
@@ -138,6 +133,20 @@ class RaumfeldDevice(object):
     def mute(self, value):
         self.rendering_control.SetMute(InstanceID=1,
                                        DesiredMute=1 if value else 0)
+    @property
+    def curTransState(self):
+        """Get Current Transport State"""
+        return self.av_transport.GetTransportInfo(InstanceID=1).CurrentTransportState
+
+    @property
+    def curTransState(self):
+        """Get CurrentURI"""
+        return self.av_transport.GetMediaInfo(InstanceID=1).CurrentURI
+
+    @property
+    def curTransState(self):
+        """Get CurrentURIMetaData"""
+        return self.av_transport.GetMediaInfo(InstanceID=1).CurrentURIMetaData
 
     def __repr__(self):
         return ('<RaumfeldDevice(location="{0}", name="{1}")>'
