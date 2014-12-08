@@ -58,6 +58,7 @@ def discover(timeout=1, retries=1):
             except socket.timeout:
                 break
     devices = [RaumfeldDevice(location) for location in locations]
+    devices = sorted(devices, key = lambda device: device.friendly_name)
 
     # only return 'Virtual Media Player'
     return [device for device in devices
@@ -98,9 +99,8 @@ class RaumfeldDevice(object):
         """Start playing"""
         self.av_transport.Play(InstanceID=1, Speed=2)
 
-
-    def playURI(self, value):
-        self.av_transport.SetAVTransportURI(InstanceID=1, CurrentURI=value, CurrentURIMetaData="")
+    def playURI(self, value, meta = ""):
+        self.av_transport.SetAVTransportURI(InstanceID=1, CurrentURI=value, CurrentURIMetaData=meta)
 
     def next(self):
         """Next"""
@@ -138,15 +138,21 @@ class RaumfeldDevice(object):
         """Get Current Transport State"""
         return self.av_transport.GetTransportInfo(InstanceID=1).CurrentTransportState
 
-    @property
-    def curTransState(self):
+    def currentURI(self):
         """Get CurrentURI"""
         return self.av_transport.GetMediaInfo(InstanceID=1).CurrentURI
 
-    @property
-    def curTransState(self):
-        """Get CurrentCurrentURIMetaData"""
-        return self.av_transport.GetMediaInfo(InstanceID=1).CurrentCurrentURIMetaData
+    def currentURIMetaData(self):
+        """Get CurrentURIMetaData"""
+        return self.av_transport.GetMediaInfo(InstanceID=1).CurrentURIMetaData
+
+    def trackURI(self):
+        """Get TrackURI"""
+        return self.av_transport.GetPositionInfo(InstanceID=1).TrackURI
+
+    def trackMetaData(self):
+        """Get TrackURIMetaData"""
+        return self.av_transport.GetPositionInfo(InstanceID=1).TrackMetaData
 
     def __repr__(self):
         return ('<RaumfeldDevice(location="{0}", name="{1}")>'
