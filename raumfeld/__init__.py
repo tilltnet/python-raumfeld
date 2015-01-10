@@ -57,13 +57,15 @@ def discover(timeout=1, retries=1):
                             locations.append(location)
             except socket.timeout:
                 break
-    devices = [RaumfeldDevice(location) for location in locations]
-    devices = sorted(devices, key = lambda device: device.friendly_name)
-
-    # only return 'Virtual Media Player'
-    return [device for device in devices
+    devices = sorted([RaumfeldDevice(location) for location in locations], key = lambda device: device.friendly_name)
+    zones = [device for device in devices
             if device.model_description == 'Virtual Media Player']
-
+    if(len(zones)>0):
+        # only return 'Virtual Media Player'
+        return zones
+    else:
+        # return all Renderers, useful to extract host IP, when all rooms are unassigned (after reboot or something)
+        return devices
 
 class RaumfeldDevice(object):
 
