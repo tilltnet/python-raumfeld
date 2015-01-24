@@ -2,7 +2,6 @@
 """
 A pythonic library to discover and control Teufel Raumfeld speakers
 """
-
 import socket
 try:
     from urllib.parse import urlparse  # python3
@@ -12,6 +11,7 @@ from pysimplesoap.client import SoapClient
 from pysimplesoap.simplexml import SimpleXMLElement
 from pysimplesoap.helpers import fetch
 from pysimplesoap.transport import get_Http
+import xml.etree.ElementTree as ET
 
 
 __version__ = '0.2'
@@ -58,14 +58,14 @@ def discover(timeout=1, retries=1):
             except socket.timeout:
                 break
     devices = sorted([RaumfeldDevice(location) for location in locations], key = lambda device: device.friendly_name)
-    zones = [device for device in devices
-            if device.model_description == 'Virtual Media Player']
+    zones = [device for device in devices if device.model_description == 'Virtual Media Player']
     if(len(zones)>0):
         # only return 'Virtual Media Player'
         return zones
     else:
         # return all Renderers, useful to extract host IP, when all rooms are unassigned (after reboot or something)
         return devices
+
 
 class RaumfeldDevice(object):
 
@@ -81,7 +81,7 @@ class RaumfeldDevice(object):
         self.http = Http(timeout=1)
         xml = fetch(self.location, self.http)
         d = SimpleXMLElement(xml)
-        self.friendly_name = str(next(d.device.friendlyName()))
+        self.friendly_name = unicode(next(d.device.friendlyName()))
         self.model_description = str(next(d.device.modelDescription()))
         self.model_name = str(next(d.modelName()))
 
@@ -101,7 +101,7 @@ class RaumfeldDevice(object):
         """Start playing"""
         self.av_transport.Play(InstanceID=1, Speed=2)
 
-    def playURI(self, value, meta = ""):
+    def playURI(self, value, meta = ''):
         self.av_transport.SetAVTransportURI(InstanceID=1, CurrentURI=value, CurrentURIMetaData=meta)
 
     def next(self):
@@ -115,6 +115,10 @@ class RaumfeldDevice(object):
     def pause(self):
         """Pause"""
         self.av_transport.Pause(InstanceID=1)
+
+    def seek(self, target, unit = 'ABS_TIME'):
+        """Seek; unit = _ABS_TIME_/REL_TIME/TRACK_NR"""
+        return self.av_transport.Seek(InstanceID=1, Unit = unit, Target = target)
 
     @property
     def volume(self):
@@ -135,26 +139,62 @@ class RaumfeldDevice(object):
     def mute(self, value):
         self.rendering_control.SetMute(InstanceID=1,
                                        DesiredMute=1 if value else 0)
+
     @property
     def curTransState(self):
         """Get Current Transport State"""
         return self.av_transport.GetTransportInfo(InstanceID=1).CurrentTransportState
 
+    @property
     def currentURI(self):
         """Get CurrentURI"""
         return self.av_transport.GetMediaInfo(InstanceID=1).CurrentURI
 
+    @property
     def currentURIMetaData(self):
         """Get CurrentURIMetaData"""
-        return self.av_transport.GetMediaInfo(InstanceID=1).CurrentURIMetaData
+        tree = ET.fromstring(self.av_transport.GetMediaInfo(InstanceID=1).CurrentURIMetaData.as_xml())
+        meta_data = tree[0][0][3].text
+        return meta_data
 
+    @property
     def trackURI(self):
         """Get TrackURI"""
         return self.av_transport.GetPositionInfo(InstanceID=1).TrackURI
 
+    @property
     def trackMetaData(self):
         """Get TrackURIMetaData"""
         return self.av_transport.GetPositionInfo(InstanceID=1).TrackMetaData
+
+    @property
+    def trackDuration(self):
+        """Get TrackDuration"""
+        return self.av_transport.GetPositionInfo(InstanceID=1).TrackDuration
+
+    @property
+    def trackRelTime(self):
+        """Get RelTime"""
+        return self.av_transport.GetPositionInfo(InstanceID=1).RelTime
+
+    @property
+    def trackAbsTime(self):
+        """Get AbsTime"""
+        return self.av_transport.GetPositionInfo(InstanceID=1).AbsTime
+
+    @property
+    def track_pos_info(self):
+        """Get PositionInfo"""
+        pos_info = self.av_transport.GetPositionInfo(InstanceID=1)
+        track = str(pos_info.Track)
+        track_duration = str(pos_info.TrackDuration)
+        tree = ET.fromstring(pos_info.TrackMetaData.as_xml())
+        tree[0][0][2].text
+        meta_data = tree[0][0][2].text
+        track_uri = str(pos_info.TrackURI)
+        rel_time = str(pos_info.RelTime)
+        abs_time = str(pos_info.AbsTime)
+        return track, track_duration, meta_data, track_uri, rel_time, abs_time
 
     def __repr__(self):
         return ('<RaumfeldDevice(location="{0}", name="{1}")>'
